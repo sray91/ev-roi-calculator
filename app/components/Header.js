@@ -5,7 +5,7 @@ import companyLogo from '../../public/nameAndLogo.png';
 export default function Header() {
   return (
     <div className="mb-16">
-      <header className="flex items-center justify-center bg-white">
+      <header className="flex items-center justify-center bg-white p-16">
         <Image src={companyLogo} alt="Company Logo" width={300} height={100} />
       </header>
       <div className="bg-blue-900 text-white py-8 px-4 mx-auto text-center">

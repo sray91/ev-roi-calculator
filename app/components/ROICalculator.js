@@ -12,16 +12,23 @@ export default function ROICalculator() {
     daysPerWeek: '5',
     weeksPerYear: 0,
     avgPeopleWorking: 0,
-    laborRate: 0,
+    laborRate: '',
     efficiency: '90',
-    projectCost: 0,
-    maintenanceCost: 0,
+    projectCost: '',
+    maintenanceCost: '',
   });
 
   const [result, setResult] = useState(null);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === 'laborRate' || name === 'projectCost' || name === 'maintenanceCost') {
+      // Format currency fields
+      const numericValue = value.replace(/[^0-9.]/g, '');
+      setFormData({ ...formData, [name]: numericValue });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleJustificationChange = (option) => {
@@ -48,31 +55,34 @@ export default function ROICalculator() {
       projectCost,
       maintenanceCost,
     } = formData;
-
+  
+    const parsedLaborRate = Number(laborRate);
+    const parsedProjectCost = Number(projectCost);
+    const parsedMaintenanceCost = Number(maintenanceCost);
+  
     const currentCost =
       parseFloat(avgHoursPerShift) *
       avgPeopleWorking *
       parseFloat(shiftsPerDay) *
       parseFloat(daysPerWeek) *
       weeksPerYear *
-      laborRate *
+      parsedLaborRate *
       (parseFloat(efficiency) / 100);
-
+  
     const roboticLaborCost = currentCost * 0.25;
-
-    const roi =
-      (((currentCost - roboticLaborCost) - (projectCost + maintenanceCost)) /
-        (projectCost + maintenanceCost)) *
-      100;
-
-    setResult(roi.toFixed(2));
+  
+    const savingsPerYear = currentCost - roboticLaborCost;
+    const totalCost = parsedProjectCost + parsedMaintenanceCost;
+    const paybackPeriod = totalCost / savingsPerYear;
+  
+    setResult(paybackPeriod.toFixed(2));
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div className="bg-white min-h-screen">
       <div className="max-w-lg mx-auto py-8 px-4">
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded shadow">
+        <form onSubmit={handleSubmit} className="space-y-4 bg-gray-100 p-6 rounded shadow">
           <div>
             <label htmlFor="projectName" className="block font-medium">
               Project Name
@@ -93,8 +103,8 @@ export default function ROICalculator() {
                 <button
                   key={option}
                   type="button"
-                  className={`px-4 py-2 rounded ${
-                    formData.justification.includes(option) ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
+                  className={`px-4 py-2 rounded border border-black ${
+                    formData.justification.includes(option) ? 'bg-blue-500 text-white' : 'bg-white text-black'
                   }`}
                   onClick={() => handleJustificationChange(option)}
                 >
@@ -110,8 +120,8 @@ export default function ROICalculator() {
                 <button
                   key={option}
                   type="button"
-                  className={`px-4 py-2 rounded ${
-                    formData.avgHoursPerShift === option ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
+                  className={`px-4 py-2 rounded border border-black ${
+                    formData.avgHoursPerShift === option ? 'bg-blue-500 text-white' : 'bg-white text-black'
                   }`}
                   onClick={() => setFormData({ ...formData, avgHoursPerShift: option })}
                 >
@@ -127,8 +137,8 @@ export default function ROICalculator() {
                 <button
                   key={option}
                   type="button"
-                  className={`px-4 py-2 rounded ${
-                    formData.shiftsPerDay === option ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
+                  className={`px-4 py-2 rounded border border-black ${
+                    formData.shiftsPerDay === option ? 'bg-blue-500 text-white' : 'bg-white text-black'
                   }`}
                   onClick={() => setFormData({ ...formData, shiftsPerDay: option })}
                 >
@@ -144,8 +154,8 @@ export default function ROICalculator() {
                 <button
                   key={option}
                   type="button"
-                  className={`px-4 py-2 rounded ${
-                    formData.daysPerWeek === option ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
+                  className={`px-4 py-2 rounded border border-black ${
+                    formData.daysPerWeek === option ? 'bg-blue-500 text-white' : 'bg-white text-black'
                   }`}
                   onClick={() => setFormData({ ...formData, daysPerWeek: option })}
                 >
@@ -185,12 +195,13 @@ export default function ROICalculator() {
               Labor Rate ($/hr)
             </label>
             <input
-              type="number"
+              type="text"
               id="laborRate"
               name="laborRate"
               value={formData.laborRate}
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded"
+              placeholder="0.00"
             />
           </div>
           <div>
@@ -200,8 +211,8 @@ export default function ROICalculator() {
                 <button
                   key={option}
                   type="button"
-                  className={`px-4 py-2 rounded ${
-                    formData.efficiency === option ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
+                  className={`px-4 py-2 rounded border border-black ${
+                    formData.efficiency === option ? 'bg-blue-500 text-white' : 'bg-white text-black'
                   }`}
                   onClick={() => setFormData({ ...formData, efficiency: option })}
                 >
@@ -215,12 +226,13 @@ export default function ROICalculator() {
               Project Cost ($)
             </label>
             <input
-              type="number"
+              type="text"
               id="projectCost"
               name="projectCost"
               value={formData.projectCost}
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded"
+              placeholder="0.00"
             />
           </div>
           <div>
@@ -228,12 +240,13 @@ export default function ROICalculator() {
               Maintenance Cost ($)
             </label>
             <input
-              type="number"
+              type="text"
               id="maintenanceCost"
               name="maintenanceCost"
               value={formData.maintenanceCost}
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded"
+              placeholder="0.00"
             />
           </div>
           <button
@@ -246,11 +259,11 @@ export default function ROICalculator() {
 
         {/* Result */}
         {result && (
-          <div className="mt-8 bg-white p-6 rounded shadow">
-            <h2 className="text-xl font-bold mb-2">Result</h2>
-            <p>The ROI for this project is: {result}%</p>
-          </div>
-        )}
+        <div className="mt-8 bg-gray-100 p-6 rounded shadow">
+          <h2 className="text-xl font-bold mb-2">Result</h2>
+          <p>The payback period for this project is: {result} years</p>
+        </div>
+      )}
       </div>
     </div>
   );
